@@ -13,6 +13,7 @@ import Cases from "./pages/Cases";
 import Network from "./pages/Network";
 import Lab from "./pages/Lab";
 import Library from "./pages/Library";
+import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
@@ -44,6 +45,7 @@ const App = () => (
                       <Route path="/rede" element={<Network />} />
                       <Route path="/lab" element={<Lab />} />
                       <Route path="/biblioteca" element={<Library />} />
+                      <Route path="/admin" element={<Admin />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </AppLayout>

@@ -6,9 +6,11 @@ import {
   Users,
   FlaskConical,
   BookOpen,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 
 import {
@@ -36,6 +38,11 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { role } = useAuth();
+
+  const allItems = role === "admin"
+    ? [...items, { title: "Admin", url: "/admin", icon: Shield }]
+    : items;
 
   return (
     <Sidebar collapsible="icon">
@@ -47,7 +54,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => {
+              {allItems.map((item) => {
                 const active = location.pathname === item.url;
                 return (
                   <SidebarMenuItem key={item.title}>
