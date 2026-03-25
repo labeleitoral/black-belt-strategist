@@ -27,6 +27,16 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
+  const fetchUsers = async () => {
+    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+    const roleMap = new Map(roles?.map((r: any) => [r.user_id, r.role]) ?? []);
+    setUsers((profiles ?? []).map((p: any) => ({ ...p, role: roleMap.get(p.id) ?? "membro" })));
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
+
   if (currentRole !== "admin") return <Navigate to="/" replace />;
 
   const fetchUsers = async () => {
