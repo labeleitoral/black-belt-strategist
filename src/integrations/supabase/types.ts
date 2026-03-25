@@ -14,6 +14,177 @@ export type Database = {
   }
   public: {
     Tables: {
+      cases: {
+        Row: {
+          author_id: string
+          category: string
+          comments_count: number
+          context: string
+          created_at: string
+          execution: string
+          id: string
+          learnings: string
+          problem: string
+          result: string
+          strategy: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          comments_count?: number
+          context?: string
+          created_at?: string
+          execution?: string
+          id?: string
+          learnings?: string
+          problem?: string
+          result?: string
+          strategy?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          comments_count?: number
+          context?: string
+          created_at?: string
+          execution?: string
+          id?: string
+          learnings?: string
+          problem?: string
+          result?: string
+          strategy?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
+      insights: {
+        Row: {
+          author_id: string
+          comments_count: number
+          content: string
+          created_at: string
+          id: string
+          likes_count: number
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          comments_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          comments_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      library_items: {
+        Row: {
+          author_id: string
+          category: string
+          created_at: string
+          description: string
+          file_url: string | null
+          id: string
+          title: string
+          type: string
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          created_at?: string
+          description?: string
+          file_url?: string | null
+          id?: string
+          title: string
+          type?: string
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          created_at?: string
+          description?: string
+          file_url?: string | null
+          id?: string
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      posts_lab: {
+        Row: {
+          author_id: string
+          comments_count: number
+          content: string
+          created_at: string
+          id: string
+          likes_count: number
+        }
+        Insert: {
+          author_id: string
+          comments_count?: number
+          content: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+        }
+        Update: {
+          author_id?: string
+          comments_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
