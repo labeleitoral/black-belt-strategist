@@ -30,9 +30,8 @@ export function ContentCard({
   const containerVariants = {
     rest: { scale: 1, y: 0 },
     hover: !shouldReduceMotion ? {
-      scale: 1.02,
-      y: -4,
-      transition: { type: "spring", stiffness: 400, damping: 28, mass: 0.6 }
+      scale: 1.02, y: -4,
+      transition: { type: "spring" as const, stiffness: 400, damping: 28, mass: 0.6 }
     } : {},
   }
 

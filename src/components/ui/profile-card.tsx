@@ -35,19 +35,10 @@ export function ProfileCard({
   const shouldAnimate = enableAnimations && !shouldReduceMotion
 
   const containerVariants = {
-    rest: { 
-      scale: 1,
-      y: 0,
-    },
+    rest: { scale: 1, y: 0 },
     hover: shouldAnimate ? { 
-      scale: 1.02, 
-      y: -4,
-      transition: { 
-        type: "spring", 
-        stiffness: 400, 
-        damping: 28,
-        mass: 0.6,
-      }
+      scale: 1.02, y: -4,
+      transition: { type: "spring" as const, stiffness: 400, damping: 28, mass: 0.6 }
     } : {},
   }
 
@@ -57,57 +48,26 @@ export function ProfileCard({
   }
 
   const contentVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20,
-    },
+    hidden: { opacity: 0, y: 20 },
     visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 28,
-        mass: 0.6,
-        staggerChildren: 0.08,
-        delayChildren: 0.1,
-      },
+      opacity: 1, y: 0,
+      transition: { type: "spring" as const, stiffness: 400, damping: 28, mass: 0.6, staggerChildren: 0.08, delayChildren: 0.1 },
     },
   }
 
   const itemVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 15,
-      scale: 0.95,
-    },
+    hidden: { opacity: 0, y: 15, scale: 0.95 },
     visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 25,
-        mass: 0.5,
-      },
+      opacity: 1, y: 0, scale: 1,
+      transition: { type: "spring" as const, stiffness: 400, damping: 25, mass: 0.5 },
     },
   }
 
   const letterVariants = {
-    hidden: { 
-      opacity: 0, 
-      scale: 0.8,
-    },
+    hidden: { opacity: 0, scale: 0.8 },
     visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: {
-        type: "spring",
-        damping: 8,
-        stiffness: 200,
-        mass: 0.8,
-      },
+      opacity: 1, scale: 1,
+      transition: { type: "spring" as const, damping: 8, stiffness: 200, mass: 0.8 },
     },
   }
 
