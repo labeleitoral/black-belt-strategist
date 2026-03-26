@@ -187,32 +187,53 @@ export type Database = {
       }
       profiles: {
         Row: {
+          academic_background: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
+          curriculum_cv: string | null
+          email: string | null
+          experience_summary: string | null
           full_name: string | null
+          headline: string | null
           id: string
           location: string | null
+          marketing_political_areas: string | null
+          portfolio_items: Json | null
           specialty: string | null
           updated_at: string
         }
         Insert: {
+          academic_background?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          curriculum_cv?: string | null
+          email?: string | null
+          experience_summary?: string | null
           full_name?: string | null
+          headline?: string | null
           id: string
           location?: string | null
+          marketing_political_areas?: string | null
+          portfolio_items?: Json | null
           specialty?: string | null
           updated_at?: string
         }
         Update: {
+          academic_background?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          curriculum_cv?: string | null
+          email?: string | null
+          experience_summary?: string | null
           full_name?: string | null
+          headline?: string | null
           id?: string
           location?: string | null
+          marketing_political_areas?: string | null
+          portfolio_items?: Json | null
           specialty?: string | null
           updated_at?: string
         }
@@ -241,6 +262,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_users: {
+        Args: never
+        Returns: {
+          academic_background: string
+          avatar_url: string
+          bio: string
+          created_at: string
+          curriculum_cv: string
+          email: string
+          experience_summary: string
+          full_name: string
+          headline: string
+          id: string
+          location: string
+          marketing_political_areas: string
+          portfolio_items: Json
+          role: Database["public"]["Enums"]["app_role"]
+          specialty: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
