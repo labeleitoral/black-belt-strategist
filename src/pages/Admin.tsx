@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Search, Pencil, Trash2, Plus, ToggleLeft, ToggleRight } from "lucide-react";
+import { Shield, Search, Pencil, Trash2, Plus, ToggleLeft, ToggleRight, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,9 @@ export default function Admin() {
   const [searchUsers, setSearchUsers] = useState("");
   const [editUser, setEditUser] = useState<UserRow | null>(null);
   const [userForm, setUserForm] = useState({ full_name: "", headline: "", specialty: "", location: "", bio: "" });
+  const [newUserOpen, setNewUserOpen] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({ full_name: "", email: "", password: "", role: "membro" });
+  const [creatingUser, setCreatingUser] = useState(false);
 
   const [insights, setInsights] = useState<InsightRow[]>([]);
   const [loadingInsights, setLoadingInsights] = useState(true);
@@ -100,6 +103,29 @@ export default function Admin() {
     }).eq("id", editUser.id);
     if (error) { toast.error("Erro ao salvar"); return; }
     toast.success("Usuário atualizado"); setEditUser(null); fetchUsers();
+  };
+
+  const createUser = async () => {
+    if (!newUserForm.email || !newUserForm.password || !newUserForm.full_name) {
+      toast.error("Preencha todos os campos"); return;
+    }
+    setCreatingUser(true);
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("create-user", {
+        body: newUserForm,
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success("Usuário criado com sucesso");
+      setNewUserOpen(false);
+      setNewUserForm({ full_name: "", email: "", password: "", role: "membro" });
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao criar usuário");
+    } finally {
+      setCreatingUser(false);
+    }
   };
 
   // ── Insight handlers ──
@@ -219,6 +245,7 @@ export default function Admin() {
               <Input placeholder="Buscar usuário..." className="pl-9 bg-secondary border-border" value={searchUsers} onChange={e => setSearchUsers(e.target.value)} />
             </div>
             <div className="text-sm text-muted-foreground">{users.length} usuários</div>
+            <Button onClick={() => setNewUserOpen(true)} className="gold-gradient text-primary-foreground"><UserPlus className="h-4 w-4 mr-2" />Novo Usuário</Button>
           </div>
           {loadingUsers ? <p className="text-muted-foreground text-sm">Carregando...</p> : (
             <div className="glass-card rounded-lg overflow-hidden">
@@ -283,6 +310,30 @@ export default function Admin() {
                 </div>
                 <div><Label>Bio</Label><Textarea value={userForm.bio} onChange={e => setUserForm(f => ({ ...f, bio: e.target.value }))} rows={3} /></div>
                 <Button onClick={saveUser} className="w-full gold-gradient text-primary-foreground">Salvar</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          {/* Create User Dialog */}
+          <Dialog open={newUserOpen} onOpenChange={setNewUserOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader><DialogTitle>Criar Novo Usuário</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Nome completo</Label><Input value={newUserForm.full_name} onChange={e => setNewUserForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Nome do usuário" /></div>
+                <div><Label>Email</Label><Input type="email" value={newUserForm.email} onChange={e => setNewUserForm(f => ({ ...f, email: e.target.value }))} placeholder="email@exemplo.com" /></div>
+                <div><Label>Senha</Label><Input type="password" value={newUserForm.password} onChange={e => setNewUserForm(f => ({ ...f, password: e.target.value }))} placeholder="Senha inicial" /></div>
+                <div><Label>Role</Label>
+                  <Select value={newUserForm.role} onValueChange={v => setNewUserForm(f => ({ ...f, role: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="mentor">Mentor</SelectItem>
+                      <SelectItem value="membro">Membro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={createUser} disabled={creatingUser} className="w-full gold-gradient text-primary-foreground">
+                  {creatingUser ? "Criando..." : "Criar Usuário"}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>

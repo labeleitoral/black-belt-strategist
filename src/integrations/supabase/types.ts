@@ -241,6 +241,7 @@ export type Database = {
           linkedin_url: string | null
           location: string | null
           marketing_political_areas: string | null
+          onboarding_completed: boolean
           portfolio_items: Json | null
           portfolio_url: string | null
           specialty: string | null
@@ -264,6 +265,7 @@ export type Database = {
           linkedin_url?: string | null
           location?: string | null
           marketing_political_areas?: string | null
+          onboarding_completed?: boolean
           portfolio_items?: Json | null
           portfolio_url?: string | null
           specialty?: string | null
@@ -287,6 +289,7 @@ export type Database = {
           linkedin_url?: string | null
           location?: string | null
           marketing_political_areas?: string | null
+          onboarding_completed?: boolean
           portfolio_items?: Json | null
           portfolio_url?: string | null
           specialty?: string | null
