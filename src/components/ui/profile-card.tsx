@@ -22,12 +22,11 @@ export function ProfileCard({
   description = "Product Designer who focuses on simplicity & usability.",
   image = "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=800&h=800&fit=crop&auto=format&q=80",
   isVerified = true,
-  followers = 312,
-  following = 48,
+  specialty,
+  location,
   enableAnimations = true,
   className,
-  onFollow = () => {},
-  isFollowing = false,
+  onClick,
 }: ProfileCardProps) {
   const [hovered, setHovered] = useState(false)
   const shouldReduceMotion = useReducedMotion()
