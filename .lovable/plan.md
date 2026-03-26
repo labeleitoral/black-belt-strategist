@@ -1,67 +1,64 @@
 
 
-## Plano: Perfil Profissional Completo + Página de Detalhe da Rede
+## Plano: Admin CRUD Completo
 
 ### Resumo
+Tornar o painel admin totalmente funcional com criação, edição e exclusão de usuários, insights, cases e agentes. Criar tabela `agents` no banco e substituir dados estáticos.
 
-Adicionar campos de redes sociais e WhatsApp ao perfil, criar página de edição de perfil, upload de avatar, e página de detalhe do membro com design premium (progressive blur, foto em destaque).
+### 1. Migração: Criar tabela `agents`
 
-### 1. Migração de Banco de Dados
+```sql
+CREATE TABLE public.agents (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  description text NOT NULL DEFAULT '',
+  style text NOT NULL DEFAULT '',
+  image_url text,
+  icon text NOT NULL DEFAULT 'brain',
+  is_active boolean NOT NULL DEFAULT true,
+  suggested_questions text[] NOT NULL DEFAULT '{}',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
 
-Adicionar colunas à tabela `profiles`:
+-- RLS: autenticados leem, admins gerenciam
+```
 
-- `instagram_url` (text, nullable)
-- `facebook_url` (text, nullable)
-- `linkedin_url` (text, nullable)
-- `twitter_url` (text, nullable)
-- `whatsapp_number` (text, nullable)
-- `portfolio_url` (text, nullable)
+### 2. Reescrever `Admin.tsx`
 
-Criar bucket de storage `avatars` (público) com RLS para upload pelo próprio usuário.
+Adicionar para cada aba:
 
-### 2. Página de Perfil/Edição (`/perfil`)
+**Usuários:**
+- Botao "Editar" abre dialog com: nome, email, especialidade, localização, headline, bio
+- Update via `supabase.from("profiles").update(...)`
+- Role change já funciona (manter)
 
-Formulário completo com:
-- Upload de foto de perfil (Supabase Storage)
-- Nome, headline, bio, currículo (textarea)
-- Especialidade, localização, área de atuação em marketing político
-- Background acadêmico, resumo de experiência
-- Links: Instagram, Facebook, LinkedIn, X, portfólio
-- WhatsApp (opcional)
-- Botão salvar com update na tabela `profiles`
+**Insights:**
+- Botão "+ Novo Insight" abre dialog de criação (título, conteúdo, tags)
+- Insert com `author_id = user.id`
+- Formulário de edição completo (já existe parcialmente, expandir)
 
-### 3. Página de Detalhe do Membro (`/rede/:id`)
+**Cases:**
+- Botão "+ Novo Case" com todos os campos: título, categoria, contexto, problema, estratégia, execução, resultado, aprendizados
+- Formulário de edição com todos os campos (atual tem apenas 4 de 8)
 
-Design premium com:
-- Hero com foto do membro em tela cheia + progressive blur overlay
-- Nome, headline, badge de verificação (admin/mentor)
-- Bio completa, áreas de atuação, experiência
-- Grid de links sociais com ícones (Instagram, Facebook, LinkedIn, X)
-- Botão de WhatsApp (se disponível)
-- Link de portfólio
-- Currículo / background acadêmico
+**Agentes:**
+- CRUD completo: criar, editar, excluir agentes
+- Campos: nome, descrição, estilo, URL da imagem, ícone, perguntas sugeridas, status ativo/inativo
+- Toggle de ativo/inativo
 
-### 4. Atualização do ProfileCard e Network
+### 3. Atualizar `Agents.tsx`
 
-- Tornar os cards clicáveis, navegando para `/rede/:id`
-- Exibir headline no card em vez de descrição genérica
-- Remover followers/following (não implementado) e substituir por especialidade + localização
+- Buscar agentes do Supabase em vez de array estático
+- Filtrar apenas `is_active = true`
+- Usar `suggested_questions` do banco
 
-### 5. Rota e Navegação
-
-- Adicionar rota `/perfil` em `App.tsx`
-- Adicionar rota `/rede/:id` em `App.tsx`
-- Adicionar link "Meu Perfil" no dropdown do header
-
-### Arquivos Modificados/Criados
+### 4. Arquivos
 
 | Arquivo | Ação |
 |---------|------|
-| `supabase/migrations/...` | Nova migração (colunas + storage bucket) |
-| `src/pages/Profile.tsx` | Criar - formulário de edição de perfil |
-| `src/pages/MemberDetail.tsx` | Criar - página de detalhe do membro |
-| `src/pages/Network.tsx` | Editar - cards clicáveis com navigate |
-| `src/components/ui/profile-card.tsx` | Editar - adicionar onClick, ajustar conteúdo |
-| `src/App.tsx` | Editar - novas rotas |
-| `src/components/AppHeader.tsx` | Editar - link "Meu Perfil" |
+| `supabase/migrations/...` | Criar tabela `agents` + RLS |
+| `src/pages/Admin.tsx` | Reescrever com CRUD completo |
+| `src/pages/Agents.tsx` | Buscar do Supabase |
+| `src/integrations/supabase/types.ts` | Auto-atualizado |
 
