@@ -1,64 +1,73 @@
 
 
-## Plano: Admin CRUD Completo
+## Plano: Criação de Usuários pelo Admin + Onboarding no Primeiro Acesso
 
 ### Resumo
-Tornar o painel admin totalmente funcional com criação, edição e exclusão de usuários, insights, cases e agentes. Criar tabela `agents` no banco e substituir dados estáticos.
 
-### 1. Migração: Criar tabela `agents`
+1. Admin pode criar usuários diretamente pelo painel (via Supabase Edge Function com service role key)
+2. No primeiro login, o usuário é redirecionado para um fluxo de onboarding multi-step para preencher seus dados profissionais
 
-```sql
-CREATE TABLE public.agents (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  description text NOT NULL DEFAULT '',
-  style text NOT NULL DEFAULT '',
-  image_url text,
-  icon text NOT NULL DEFAULT 'brain',
-  is_active boolean NOT NULL DEFAULT true,
-  suggested_questions text[] NOT NULL DEFAULT '{}',
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
+---
 
--- RLS: autenticados leem, admins gerenciam
-```
+### 1. Edge Function: `create-user`
 
-### 2. Reescrever `Admin.tsx`
+Criar `supabase/functions/create-user/index.ts`:
+- Recebe `{ email, password, full_name, role }` via POST
+- Valida que o chamador é admin (verifica JWT + `has_role`)
+- Usa `supabase.auth.admin.createUser()` com service role key para criar o usuário
+- Insere o role na tabela `user_roles` se diferente de "membro"
+- Retorna o ID do usuário criado
 
-Adicionar para cada aba:
+### 2. Botão "Criar Usuário" no Admin
 
-**Usuários:**
-- Botao "Editar" abre dialog com: nome, email, especialidade, localização, headline, bio
-- Update via `supabase.from("profiles").update(...)`
-- Role change já funciona (manter)
+Adicionar no tab "Usuários" do `Admin.tsx`:
+- Botão "+ Novo Usuário" abre dialog com campos: nome, email, senha, role
+- Chama a edge function `create-user`
+- Atualiza a lista após sucesso
 
-**Insights:**
-- Botão "+ Novo Insight" abre dialog de criação (título, conteúdo, tags)
-- Insert com `author_id = user.id`
-- Formulário de edição completo (já existe parcialmente, expandir)
+### 3. Flag de Onboarding no Banco
 
-**Cases:**
-- Botão "+ Novo Case" com todos os campos: título, categoria, contexto, problema, estratégia, execução, resultado, aprendizados
-- Formulário de edição com todos os campos (atual tem apenas 4 de 8)
+Migração SQL:
+- Adicionar coluna `onboarding_completed boolean NOT NULL DEFAULT false` na tabela `profiles`
+- O trigger `handle_new_user` já cria o profile com valores vazios, então o default `false` funciona automaticamente
 
-**Agentes:**
-- CRUD completo: criar, editar, excluir agentes
-- Campos: nome, descrição, estilo, URL da imagem, ícone, perguntas sugeridas, status ativo/inativo
-- Toggle de ativo/inativo
+### 4. Componente de Onboarding (`src/pages/Onboarding.tsx`)
 
-### 3. Atualizar `Agents.tsx`
+Fluxo multi-step com 3-4 etapas:
 
-- Buscar agentes do Supabase em vez de array estático
-- Filtrar apenas `is_active = true`
-- Usar `suggested_questions` do banco
+**Step 1 - Boas-vindas + Foto e Nome**
+- Upload de avatar
+- Nome completo, headline
 
-### 4. Arquivos
+**Step 2 - Dados Profissionais**
+- Especialidade, localização, área de atuação em marketing político
+- Background acadêmico
+
+**Step 3 - Redes Sociais e Contato**
+- Instagram, LinkedIn, Facebook, X
+- WhatsApp (opcional), portfólio
+
+**Step 4 - Bio e Experiência**
+- Biografia, resumo de experiência
+- Botão "Concluir" que salva tudo e marca `onboarding_completed = true`
+
+Design: progress bar no topo, transições suaves, estética premium Black Belt.
+
+### 5. Redirecionamento no ProtectedRoute
+
+Atualizar `ProtectedRoute.tsx`:
+- Após confirmar sessão, buscar `profiles.onboarding_completed`
+- Se `false`, redirecionar para `/onboarding`
+- Adicionar rota `/onboarding` no `App.tsx`
+
+### 6. Arquivos
 
 | Arquivo | Ação |
 |---------|------|
-| `supabase/migrations/...` | Criar tabela `agents` + RLS |
-| `src/pages/Admin.tsx` | Reescrever com CRUD completo |
-| `src/pages/Agents.tsx` | Buscar do Supabase |
-| `src/integrations/supabase/types.ts` | Auto-atualizado |
+| `supabase/functions/create-user/index.ts` | Criar - edge function |
+| `supabase/migrations/...` | Adicionar `onboarding_completed` |
+| `src/pages/Onboarding.tsx` | Criar - fluxo multi-step |
+| `src/pages/Admin.tsx` | Adicionar dialog "Criar Usuário" |
+| `src/components/ProtectedRoute.tsx` | Verificar onboarding |
+| `src/App.tsx` | Adicionar rota `/onboarding` |
 
