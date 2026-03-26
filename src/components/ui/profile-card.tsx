@@ -10,12 +10,11 @@ interface ProfileCardProps {
   description?: string
   image?: string
   isVerified?: boolean
-  followers?: number
-  following?: number
+  specialty?: string
+  location?: string
   enableAnimations?: boolean
   className?: string
-  onFollow?: () => void
-  isFollowing?: boolean
+  onClick?: () => void
 }
 
 export function ProfileCard({
