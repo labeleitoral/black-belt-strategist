@@ -1,4 +1,5 @@
 import { Search, Bell, LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
