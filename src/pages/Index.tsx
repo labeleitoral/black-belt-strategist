@@ -1,125 +1,144 @@
-import { useState, useEffect } from "react";
-import { Brain, Lightbulb, Briefcase, Users, ArrowRight, MessageSquare } from "lucide-react";
-import { StatCard } from "@/components/StatCard";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
-interface RecentInsight {
-  id: string;
-  title: string;
-  created_at: string;
-  profiles?: { full_name: string | null } | null;
-}
-
-interface ActiveCase {
-  id: string;
-  title: string;
-  category: string;
-  comments_count: number;
-}
+import { FeedProfileCard } from "@/components/feed/FeedProfileCard";
+import { FeedComposer } from "@/components/feed/FeedComposer";
+import { FeedPost, type FeedItem } from "@/components/feed/FeedPost";
+import { FeedSidebar } from "@/components/feed/FeedSidebar";
 
 export default function Dashboard() {
-  const [insights, setInsights] = useState<RecentInsight[]>([]);
-  const [cases, setCases] = useState<ActiveCase[]>([]);
-  const [stats, setStats] = useState({ insights: 0, cases: 0, members: 0 });
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetch = async () => {
-      const [insightsRes, casesRes, profilesCount] = await Promise.all([
-        supabase.from("insights").select("id, title, created_at, profiles(full_name)").order("created_at", { ascending: false }).limit(3),
-        supabase.from("cases").select("id, title, category, comments_count").order("created_at", { ascending: false }).limit(3),
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-      ]);
-      if (insightsRes.data) setInsights(insightsRes.data as any);
-      if (casesRes.data) setCases(casesRes.data as any);
-      setStats({
-        insights: insightsRes.data?.length ?? 0,
-        cases: casesRes.data?.length ?? 0,
-        members: profilesCount.count ?? 0,
-      });
+  const fetchFeed = useCallback(async () => {
+    setLoading(true);
+
+    const [insightsRes, casesRes, postsRes] = await Promise.all([
+      supabase
+        .from("insights")
+        .select("id, title, content, created_at, likes_count, comments_count, tags, author_id")
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("cases")
+        .select("id, title, context, category, comments_count, created_at, author_id")
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("posts_lab")
+        .select("id, content, created_at, likes_count, comments_count, author_id")
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
+
+    // Collect unique author IDs
+    const allItems = [
+      ...(insightsRes.data || []).map((i) => ({ ...i, _type: "insight" as const })),
+      ...(casesRes.data || []).map((c) => ({ ...c, _type: "case" as const })),
+      ...(postsRes.data || []).map((p) => ({ ...p, _type: "post" as const })),
+    ];
+
+    const authorIds = [...new Set(allItems.map((i) => i.author_id))];
+
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name, headline, avatar_url")
+      .in("id", authorIds.length > 0 ? authorIds : ["00000000-0000-0000-0000-000000000000"]);
+
+    const profileMap = new Map(
+      (profiles || []).map((p) => [p.id, p])
+    );
+
+    const getAuthor = (authorId: string) => {
+      const p = profileMap.get(authorId);
+      return {
+        id: authorId,
+        full_name: p?.full_name || null,
+        headline: p?.headline || null,
+        avatar_url: p?.avatar_url || null,
+      };
     };
-    fetch();
+
+    const merged: FeedItem[] = [
+      ...(insightsRes.data || []).map((i) => ({
+        id: i.id,
+        type: "insight" as const,
+        title: i.title,
+        content: i.content,
+        created_at: i.created_at,
+        likes_count: i.likes_count,
+        comments_count: i.comments_count,
+        tags: i.tags,
+        author: getAuthor(i.author_id),
+      })),
+      ...(casesRes.data || []).map((c) => ({
+        id: c.id,
+        type: "case" as const,
+        title: c.title,
+        content: c.context,
+        created_at: c.created_at,
+        likes_count: 0,
+        comments_count: c.comments_count,
+        category: c.category,
+        author: getAuthor(c.author_id),
+      })),
+      ...(postsRes.data || []).map((p) => ({
+        id: p.id,
+        type: "post" as const,
+        content: p.content,
+        created_at: p.created_at,
+        likes_count: p.likes_count,
+        comments_count: p.comments_count,
+        author: getAuthor(p.author_id),
+      })),
+    ];
+
+    merged.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    setFeedItems(merged);
+    setLoading(false);
   }, []);
 
-  const timeAgo = (d: string) => {
-    const diff = Date.now() - new Date(d).getTime();
-    const hrs = Math.floor(diff / 3600000);
-    if (hrs < 1) return "agora";
-    if (hrs < 24) return `${hrs}h atrás`;
-    return `${Math.floor(hrs / 24)}d atrás`;
-  };
+  useEffect(() => {
+    fetchFeed();
+  }, [fetchFeed]);
 
   return (
-    <div className="space-y-8 max-w-6xl">
-      <div>
-        <h1 className="text-2xl font-display font-bold">
-          Bem-vindo à <span className="gold-text">Comunidade Black Belt</span>
-        </h1>
-        <p className="text-muted-foreground mt-1">Seu ambiente de inteligência política e estratégia.</p>
-      </div>
+    <div className="max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-6">
+        {/* Left — Profile Card */}
+        <FeedProfileCard />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Insights" value={String(stats.insights)} icon={Lightbulb} description="publicados" />
-        <StatCard title="Cases" value={String(stats.cases)} icon={Briefcase} description="compartilhados" />
-        <StatCard title="Membros" value={String(stats.members)} icon={Users} description="na rede" />
-        <StatCard title="Agentes" value="5" icon={Brain} description="prontos para interação" />
-      </div>
+        {/* Center — Feed */}
+        <div className="space-y-4 min-w-0">
+          <FeedComposer onPublished={fetchFeed} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="glass-card rounded-lg p-5 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display font-semibold">Insights Recentes</h2>
-            <Link to="/insights" className="text-sm text-primary hover:underline flex items-center gap-1">Ver todos <ArrowRight className="h-3 w-3" /></Link>
-          </div>
-          <div className="space-y-4">
-            {insights.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum insight ainda.</p>
-            ) : insights.map(i => (
-              <div key={i.id} className="flex items-start gap-3 group cursor-pointer">
-                <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium group-hover:text-primary transition-colors truncate">{i.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{i.profiles?.full_name || "Anônimo"} · {timeAgo(i.created_at)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="glass-card rounded-xl p-4 animate-pulse h-40"
+                />
+              ))}
+            </div>
+          ) : feedItems.length === 0 ? (
+            <div className="glass-card rounded-xl p-8 text-center">
+              <p className="text-muted-foreground text-sm">
+                Nenhuma publicação ainda. Seja o primeiro a compartilhar!
+              </p>
+            </div>
+          ) : (
+            feedItems.map((item) => (
+              <FeedPost key={`${item.type}-${item.id}`} item={item} />
+            ))
+          )}
         </div>
 
-        <div className="glass-card rounded-lg p-5 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display font-semibold">Cases em Alta</h2>
-            <Link to="/cases" className="text-sm text-primary hover:underline flex items-center gap-1">Ver todos <ArrowRight className="h-3 w-3" /></Link>
-          </div>
-          <div className="space-y-4">
-            {cases.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum case ainda.</p>
-            ) : cases.map(c => (
-              <div key={c.id} className="p-3 rounded-md bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer">
-                <p className="text-sm font-medium">{c.title}</p>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">{c.category || "Geral"}</span>
-                  <span className="text-xs text-muted-foreground flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {c.comments_count}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="glass-card rounded-lg p-5 animate-fade-in">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-semibold">Agentes de Insight</h2>
-          <Link to="/agentes" className="text-sm text-primary hover:underline flex items-center gap-1">Acessar Hub <ArrowRight className="h-3 w-3" /></Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {["Leitura Política", "Dados e Tendências", "Narrativa", "Estratégia", "Comunicação"].map(agent => (
-            <Link key={agent} to="/agentes" className="p-4 rounded-md bg-secondary/50 hover:bg-secondary border border-border hover:border-primary/30 transition-all text-center group">
-              <Brain className="h-5 w-5 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-sm font-medium">{agent}</p>
-            </Link>
-          ))}
-        </div>
+        {/* Right — Sidebar */}
+        <FeedSidebar />
       </div>
     </div>
   );
