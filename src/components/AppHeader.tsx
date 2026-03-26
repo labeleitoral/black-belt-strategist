@@ -21,6 +21,7 @@ const roleLabels: Record<string, string> = {
 
 export function AppHeader() {
   const { user, role, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="h-14 flex items-center justify-between border-b border-border px-4">
@@ -51,6 +52,11 @@ export function AppHeader() {
                 <p className="text-xs text-muted-foreground mt-0.5">{roleLabels[role] ?? role}</p>
               )}
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/perfil")}>
+              <User className="h-4 w-4 mr-2" />
+              Meu Perfil
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
               <LogOut className="h-4 w-4 mr-2" />
