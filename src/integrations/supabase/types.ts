@@ -194,14 +194,20 @@ export type Database = {
           curriculum_cv: string | null
           email: string | null
           experience_summary: string | null
+          facebook_url: string | null
           full_name: string | null
           headline: string | null
           id: string
+          instagram_url: string | null
+          linkedin_url: string | null
           location: string | null
           marketing_political_areas: string | null
           portfolio_items: Json | null
+          portfolio_url: string | null
           specialty: string | null
+          twitter_url: string | null
           updated_at: string
+          whatsapp_number: string | null
         }
         Insert: {
           academic_background?: string | null
@@ -211,14 +217,20 @@ export type Database = {
           curriculum_cv?: string | null
           email?: string | null
           experience_summary?: string | null
+          facebook_url?: string | null
           full_name?: string | null
           headline?: string | null
           id: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
           location?: string | null
           marketing_political_areas?: string | null
           portfolio_items?: Json | null
+          portfolio_url?: string | null
           specialty?: string | null
+          twitter_url?: string | null
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Update: {
           academic_background?: string | null
@@ -228,14 +240,20 @@ export type Database = {
           curriculum_cv?: string | null
           email?: string | null
           experience_summary?: string | null
+          facebook_url?: string | null
           full_name?: string | null
           headline?: string | null
           id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
           location?: string | null
           marketing_political_areas?: string | null
           portfolio_items?: Json | null
+          portfolio_url?: string | null
           specialty?: string | null
+          twitter_url?: string | null
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Relationships: []
       }

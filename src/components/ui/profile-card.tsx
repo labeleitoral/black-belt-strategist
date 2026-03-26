@@ -10,12 +10,11 @@ interface ProfileCardProps {
   description?: string
   image?: string
   isVerified?: boolean
-  followers?: number
-  following?: number
+  specialty?: string
+  location?: string
   enableAnimations?: boolean
   className?: string
-  onFollow?: () => void
-  isFollowing?: boolean
+  onClick?: () => void
 }
 
 export function ProfileCard({
@@ -23,12 +22,11 @@ export function ProfileCard({
   description = "Product Designer who focuses on simplicity & usability.",
   image = "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=800&h=800&fit=crop&auto=format&q=80",
   isVerified = true,
-  followers = 312,
-  following = 48,
+  specialty,
+  location,
   enableAnimations = true,
   className,
-  onFollow = () => {},
-  isFollowing = false,
+  onClick,
 }: ProfileCardProps) {
   const [hovered, setHovered] = useState(false)
   const shouldReduceMotion = useReducedMotion()
@@ -75,6 +73,7 @@ export function ProfileCard({
     <motion.div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
       initial="rest"
       whileHover="hover"
       variants={containerVariants}
@@ -83,7 +82,6 @@ export function ProfileCard({
         className
       )}
     >
-      {/* Full Cover Image */}
       <motion.img
         src={image}
         alt={name}
@@ -92,18 +90,15 @@ export function ProfileCard({
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* Blur Overlay layers */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 h-1/2 backdrop-blur-[2px]" style={{ maskImage: "linear-gradient(to top, black 30%, transparent)" }} />
 
-      {/* Content */}
       <motion.div
         variants={contentVariants}
         initial="hidden"
         animate="visible"
-        className="absolute bottom-0 left-0 right-0 p-5 space-y-3"
+        className="absolute bottom-0 left-0 right-0 p-5 space-y-2"
       >
-        {/* Name and Verification */}
         <motion.div variants={itemVariants} className="flex items-center gap-2">
           <h3 className="text-lg font-display font-bold text-white">
             {name.split("").map((letter, index) => (
@@ -119,38 +114,19 @@ export function ProfileCard({
           )}
         </motion.div>
 
-        {/* Description */}
-        <motion.p variants={itemVariants} className="text-sm text-white/70 line-clamp-2">
-          {description}
-        </motion.p>
+        {description && (
+          <motion.p variants={itemVariants} className="text-sm text-white/70 line-clamp-2">
+            {description}
+          </motion.p>
+        )}
 
-        {/* Stats */}
-        <motion.div variants={itemVariants} className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 text-white/80">
-            <Users className="w-3.5 h-3.5" />
-            <span className="text-sm font-medium">{followers}</span>
-            <span className="text-xs text-white/50">followers</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-white/80">
-            <UserCheck className="w-3.5 h-3.5" />
-            <span className="text-sm font-medium">{following}</span>
-            <span className="text-xs text-white/50">following</span>
-          </div>
-        </motion.div>
-
-        {/* Follow Button */}
-        <motion.button
-          variants={itemVariants}
-          onClick={(e) => { e.stopPropagation(); onFollow(); }}
-          className={cn(
-            "w-full py-2 rounded-xl text-sm font-medium transition-all",
-            isFollowing
-              ? "bg-white/10 text-white border border-white/20"
-              : "gold-gradient text-primary-foreground"
-          )}
-        >
-          {isFollowing ? "Following" : "Follow +"}
-        </motion.button>
+        {(specialty || location) && (
+          <motion.div variants={itemVariants} className="flex items-center gap-3 text-white/60 text-xs">
+            {specialty && <span>{specialty}</span>}
+            {specialty && location && <span>·</span>}
+            {location && <span>{location}</span>}
+          </motion.div>
+        )}
       </motion.div>
     </motion.div>
   )

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Search, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ProfileCard } from "@/components/ui/profile-card";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,14 +8,13 @@ import { supabase } from "@/integrations/supabase/client";
 interface Member {
   id: string;
   full_name: string | null;
+  headline: string | null;
   specialty: string | null;
   location: string | null;
   bio: string | null;
   avatar_url: string | null;
   role?: string;
 }
-
-const roleLabels: Record<string, string> = { admin: "Admin", mentor: "Mentor", membro: "Membro" };
 
 const defaultAvatars = [
   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=800&fit=crop&auto=format&q=80",
@@ -25,19 +25,20 @@ const defaultAvatars = [
 ];
 
 export default function Network() {
+  const navigate = useNavigate();
   const [members, setMembers] = useState<Member[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchMembers = async () => {
       const { data: profiles } = await supabase.from("profiles").select("*");
       const { data: roles } = await supabase.from("user_roles").select("user_id, role");
       const roleMap = new Map(roles?.map((r: any) => [r.user_id, r.role]) ?? []);
       setMembers((profiles ?? []).map((p: any) => ({ ...p, role: roleMap.get(p.id) ?? "membro" })));
       setLoading(false);
     };
-    fetch();
+    fetchMembers();
   }, []);
 
   const filtered = members.filter(m => {
@@ -70,13 +71,14 @@ export default function Network() {
             <ProfileCard
               key={m.id}
               name={m.full_name || "Sem nome"}
-              description={[m.specialty, m.location].filter(Boolean).join(" · ") || m.bio || roleLabels[m.role ?? "membro"]}
+              description={m.headline || m.bio || undefined}
               image={m.avatar_url || defaultAvatars[i % defaultAvatars.length]}
               isVerified={m.role === "admin" || m.role === "mentor"}
-              followers={0}
-              following={0}
+              specialty={m.specialty || undefined}
+              location={m.location || undefined}
               enableAnimations
               className="h-80"
+              onClick={() => navigate(`/rede/${m.id}`)}
             />
           ))}
         </div>

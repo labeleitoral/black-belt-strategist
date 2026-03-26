@@ -11,6 +11,8 @@ import Agents from "./pages/Agents";
 import Insights from "./pages/Insights";
 import Cases from "./pages/Cases";
 import Network from "./pages/Network";
+import MemberDetail from "./pages/MemberDetail";
+import Profile from "./pages/Profile";
 import Lab from "./pages/Lab";
 import Library from "./pages/Library";
 import Admin from "./pages/Admin";
@@ -43,6 +45,8 @@ const App = () => (
                       <Route path="/insights" element={<Insights />} />
                       <Route path="/cases" element={<Cases />} />
                       <Route path="/rede" element={<Network />} />
+                      <Route path="/rede/:id" element={<MemberDetail />} />
+                      <Route path="/perfil" element={<Profile />} />
                       <Route path="/lab" element={<Lab />} />
                       <Route path="/biblioteca" element={<Library />} />
                       <Route path="/admin" element={<Admin />} />
