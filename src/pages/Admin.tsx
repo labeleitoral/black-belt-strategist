@@ -313,6 +313,30 @@ export default function Admin() {
               </div>
             </DialogContent>
           </Dialog>
+          {/* Create User Dialog */}
+          <Dialog open={newUserOpen} onOpenChange={setNewUserOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader><DialogTitle>Criar Novo Usuário</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Nome completo</Label><Input value={newUserForm.full_name} onChange={e => setNewUserForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Nome do usuário" /></div>
+                <div><Label>Email</Label><Input type="email" value={newUserForm.email} onChange={e => setNewUserForm(f => ({ ...f, email: e.target.value }))} placeholder="email@exemplo.com" /></div>
+                <div><Label>Senha</Label><Input type="password" value={newUserForm.password} onChange={e => setNewUserForm(f => ({ ...f, password: e.target.value }))} placeholder="Senha inicial" /></div>
+                <div><Label>Role</Label>
+                  <Select value={newUserForm.role} onValueChange={v => setNewUserForm(f => ({ ...f, role: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="mentor">Mentor</SelectItem>
+                      <SelectItem value="membro">Membro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={createUser} disabled={creatingUser} className="w-full gold-gradient text-primary-foreground">
+                  {creatingUser ? "Criando..." : "Criar Usuário"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         {/* ── INSIGHTS ── */}
