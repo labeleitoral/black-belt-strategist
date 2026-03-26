@@ -1,31 +1,37 @@
 import { Brain, ArrowRight, Compass, BarChart3, PenTool, Target, Megaphone } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ContentCard } from "@/components/ui/content-card";
+import { supabase } from "@/integrations/supabase/client";
 
-const agents = [
-  { id: "politica", name: "Leitura Política", icon: Compass, description: "Análise de cenários, correlações de força e movimentos políticos.", style: "Analítico e provocador", image: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=800&h=500&fit=crop&auto=format&q=80" },
-  { id: "dados", name: "Dados e Tendências", icon: BarChart3, description: "Interpretação de pesquisas, dados eleitorais e tendências sociais.", style: "Objetivo e questionador", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop&auto=format&q=80" },
-  { id: "narrativa", name: "Narrativa", icon: PenTool, description: "Construção de discurso, posicionamento e arquitetura de mensagem.", style: "Reflexivo e desafiador", image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&h=500&fit=crop&auto=format&q=80" },
-  { id: "estrategia", name: "Estratégia", icon: Target, description: "Planejamento de campanha, alocação de recursos e tomada de decisão.", style: "Estruturado e incisivo", image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=500&fit=crop&auto=format&q=80" },
-  { id: "comunicacao", name: "Comunicação", icon: Megaphone, description: "Canais, formato, timing e gestão de crise na comunicação política.", style: "Prático e direto", image: "https://images.unsplash.com/photo-1478147427282-58a87a120781?w=800&h=500&fit=crop&auto=format&q=80" },
-];
+const iconMap: Record<string, any> = {
+  brain: Brain, compass: Compass, "bar-chart-3": BarChart3,
+  "pen-tool": PenTool, target: Target, megaphone: Megaphone,
+};
 
-const suggestedQuestions = [
-  "Como avaliar a viabilidade de um candidato em cenário fragmentado?",
-  "Quais indicadores antecipam mudança de voto em pesquisas?",
-  "Como construir narrativa de renovação para candidato à reeleição?",
-];
+interface Agent {
+  id: string; name: string; description: string; style: string;
+  image_url: string | null; icon: string; suggested_questions: string[];
+}
 
 export default function Agents() {
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
 
+  useEffect(() => {
+    supabase.from("agents").select("*").eq("is_active", true).order("created_at").then(({ data }) => {
+      setAgents(data ?? []); setLoading(false);
+    });
+  }, []);
+
   const selectedAgent = agents.find((a) => a.id === selected);
 
   if (selected && selectedAgent) {
+    const Icon = iconMap[selectedAgent.icon] || Brain;
     return (
       <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
         <div className="flex items-center gap-3 mb-6">
@@ -33,7 +39,7 @@ export default function Agents() {
             ← Voltar
           </button>
           <div className="h-4 w-px bg-border" />
-          <selectedAgent.icon className="h-5 w-5 text-primary" />
+          <Icon className="h-5 w-5 text-primary" />
           <div>
             <h2 className="font-display font-semibold">{selectedAgent.name}</h2>
             <p className="text-xs text-muted-foreground">{selectedAgent.style}</p>
@@ -43,7 +49,7 @@ export default function Agents() {
         <div className="flex-1 overflow-auto space-y-4 mb-4">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-              <selectedAgent.icon className="h-12 w-12 text-primary/30" />
+              <Icon className="h-12 w-12 text-primary/30" />
               <div>
                 <p className="text-muted-foreground text-sm">
                   Inicie uma conversa com o agente de <span className="text-foreground">{selectedAgent.name}</span>.
@@ -53,7 +59,7 @@ export default function Agents() {
                 </p>
               </div>
               <div className="space-y-2 w-full max-w-md">
-                {suggestedQuestions.map((q, i) => (
+                {selectedAgent.suggested_questions.map((q, i) => (
                   <button key={i} onClick={() => setInput(q)} className="w-full text-left text-sm p-3 rounded-md bg-secondary/50 hover:bg-secondary border border-border hover:border-primary/30 transition-all">
                     {q}
                   </button>
@@ -95,6 +101,8 @@ export default function Agents() {
     );
   }
 
+  if (loading) return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Carregando agentes...</p></div>;
+
   return (
     <div className="max-w-5xl space-y-6">
       <div>
@@ -103,22 +111,25 @@ export default function Agents() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {agents.map((agent) => (
-          <ContentCard
-            key={agent.id}
-            title={agent.name}
-            description={agent.description}
-            subtitle={`Estilo: ${agent.style}`}
-            image={agent.image}
-            onClick={() => setSelected(agent.id)}
-            footer={
-              <div className="flex items-center justify-between text-xs text-primary">
-                <span>Iniciar conversa</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </div>
-            }
-          />
-        ))}
+        {agents.map((agent) => {
+          const Icon = iconMap[agent.icon] || Brain;
+          return (
+            <ContentCard
+              key={agent.id}
+              title={agent.name}
+              description={agent.description}
+              subtitle={`Estilo: ${agent.style}`}
+              image={agent.image_url || undefined}
+              onClick={() => setSelected(agent.id)}
+              footer={
+                <div className="flex items-center justify-between text-xs text-primary">
+                  <span>Iniciar conversa</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </div>
+              }
+            />
+          );
+        })}
       </div>
     </div>
   );
