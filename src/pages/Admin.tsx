@@ -245,6 +245,7 @@ export default function Admin() {
               <Input placeholder="Buscar usuário..." className="pl-9 bg-secondary border-border" value={searchUsers} onChange={e => setSearchUsers(e.target.value)} />
             </div>
             <div className="text-sm text-muted-foreground">{users.length} usuários</div>
+            <Button onClick={() => setNewUserOpen(true)} className="gold-gradient text-primary-foreground"><UserPlus className="h-4 w-4 mr-2" />Novo Usuário</Button>
           </div>
           {loadingUsers ? <p className="text-muted-foreground text-sm">Carregando...</p> : (
             <div className="glass-card rounded-lg overflow-hidden">
