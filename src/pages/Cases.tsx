@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { MessageSquare, ArrowRight, Plus } from "lucide-react";
+import { MessageSquare, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ContentCard } from "@/components/ui/content-card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -19,6 +20,14 @@ interface Case {
   created_at: string;
   profiles?: { full_name: string | null } | null;
 }
+
+const caseImages = [
+  "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800&h=500&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1523995462485-3d171b5c8fa9?w=800&h=500&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=500&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&h=500&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop&auto=format&q=80",
+];
 
 export default function Cases() {
   const { user } = useAuth();
@@ -52,7 +61,7 @@ export default function Cases() {
   };
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-5xl space-y-6">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold">Hub de Cases</h1>
@@ -80,27 +89,22 @@ export default function Cases() {
       ) : cases.length === 0 ? (
         <p className="text-muted-foreground text-sm">Nenhum case publicado ainda.</p>
       ) : (
-        <div className="space-y-4">
-          {cases.map(c => (
-            <div key={c.id} className="glass-card rounded-lg p-5 hover:border-primary/20 transition-all cursor-pointer animate-fade-in group">
-              <div className="flex items-start justify-between">
-                <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">{c.category || "Geral"}</span>
-                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-              <h3 className="font-display font-semibold mt-3 group-hover:text-primary transition-colors">{c.title}</h3>
-              {c.context && <p className="text-sm text-muted-foreground mt-2">{c.context}</p>}
-              {c.result && (
-                <div className="mt-3 p-3 rounded-md bg-primary/5 border border-primary/10">
-                  <p className="text-sm"><span className="text-primary font-medium">Resultado:</span> {c.result}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {cases.map((c, i) => (
+            <ContentCard
+              key={c.id}
+              title={c.title}
+              subtitle={c.profiles?.full_name || "Anônimo"}
+              description={c.context}
+              image={caseImages[i % caseImages.length]}
+              badge={c.category || "Geral"}
+              footer={
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
+                  <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {c.comments_count}</span>
                 </div>
-              )}
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                <span className="text-sm text-muted-foreground">{c.profiles?.full_name || "Anônimo"}</span>
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MessageSquare className="h-3 w-3" /> {c.comments_count} comentários
-                </span>
-              </div>
-            </div>
+              }
+            />
           ))}
         </div>
       )}

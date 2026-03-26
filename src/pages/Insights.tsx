@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Heart, MessageSquare, Bookmark, Filter, Plus } from "lucide-react";
+import { Heart, MessageSquare, Bookmark, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ContentCard } from "@/components/ui/content-card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -23,6 +24,14 @@ interface Insight {
 
 const filters = ["Todos", "Análise", "Dados", "Narrativa", "Estratégia", "Digital"];
 
+const insightImages = [
+  "https://images.unsplash.com/photo-1504711434969-e33886168d6c?w=800&h=500&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=500&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=500&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800&h=500&fit=crop&auto=format&q=80",
+];
+
 export default function Insights() {
   const { user, role } = useAuth();
   const [insights, setInsights] = useState<Insight[]>([]);
@@ -41,12 +50,8 @@ export default function Insights() {
       .select("*, profiles(full_name)")
       .order("created_at", { ascending: false });
     if (!error && data) {
-      // fetch roles for authors
       const authorIds = [...new Set(data.map((i: any) => i.author_id))];
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("user_id, role")
-        .in("user_id", authorIds);
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("user_id", authorIds);
       const roleMap = new Map(roles?.map((r: any) => [r.user_id, r.role]) ?? []);
       setInsights(data.map((i: any) => ({ ...i, author_role: roleMap.get(i.author_id) ?? "membro" })));
     }
@@ -73,10 +78,8 @@ export default function Insights() {
 
   const filtered = activeFilter === "Todos" ? insights : insights.filter(i => i.tags.some(t => t.toLowerCase().includes(activeFilter.toLowerCase())));
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-5xl space-y-6">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold">Central de Insights</h1>
@@ -111,30 +114,22 @@ export default function Insights() {
       ) : filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm">Nenhum insight encontrado.</p>
       ) : (
-        <div className="space-y-4">
-          {filtered.map(insight => (
-            <div key={insight.id} className="glass-card rounded-lg p-5 hover:border-primary/20 transition-all cursor-pointer animate-fade-in">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-display font-semibold hover:text-primary transition-colors">{insight.title}</h3>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-sm text-muted-foreground">{insight.profiles?.full_name || "Anônimo"}</span>
-                    <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">{roleLabel[insight.author_role ?? "membro"]}</span>
-                    <span className="text-xs text-muted-foreground">· {formatDate(insight.created_at)}</span>
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    {insight.tags.map(tag => (
-                      <span key={tag} className="text-xs bg-secondary px-2 py-0.5 rounded text-secondary-foreground">{tag}</span>
-                    ))}
-                  </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((insight, i) => (
+            <ContentCard
+              key={insight.id}
+              title={insight.title}
+              subtitle={`${insight.profiles?.full_name || "Anônimo"} · ${roleLabel[insight.author_role ?? "membro"]}`}
+              description={insight.content}
+              image={insightImages[i % insightImages.length]}
+              badge={insight.tags[0]}
+              footer={
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {insight.likes_count}</span>
+                  <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {insight.comments_count}</span>
                 </div>
-                <Bookmark className="h-4 w-4 text-muted-foreground hover:text-primary shrink-0 cursor-pointer" />
-              </div>
-              <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border">
-                <span className="flex items-center gap-1 text-xs text-muted-foreground"><Heart className="h-3 w-3" /> {insight.likes_count}</span>
-                <span className="flex items-center gap-1 text-xs text-muted-foreground"><MessageSquare className="h-3 w-3" /> {insight.comments_count}</span>
-              </div>
-            </div>
+              }
+            />
           ))}
         </div>
       )}
