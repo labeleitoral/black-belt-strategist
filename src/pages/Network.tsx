@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { ProfileCard } from "@/components/ui/profile-card";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Member {
@@ -9,10 +10,19 @@ interface Member {
   specialty: string | null;
   location: string | null;
   bio: string | null;
+  avatar_url: string | null;
   role?: string;
 }
 
 const roleLabels: Record<string, string> = { admin: "Admin", mentor: "Mentor", membro: "Membro" };
+
+const defaultAvatars = [
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=800&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&h=800&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&h=800&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800&h=800&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&h=800&fit=crop&auto=format&q=80",
+];
 
 export default function Network() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -39,7 +49,7 @@ export default function Network() {
   });
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-5xl space-y-6">
       <div>
         <h1 className="text-2xl font-display font-bold">Rede de Membros</h1>
         <p className="text-muted-foreground mt-1">Networking qualificado entre estrategistas.</p>
@@ -55,29 +65,19 @@ export default function Network() {
       ) : filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm">Nenhum membro encontrado.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map(m => (
-            <div key={m.id} className="glass-card rounded-lg p-5 hover:border-primary/20 transition-all cursor-pointer animate-fade-in">
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-full gold-gradient flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
-                  {(m.full_name || "?").charAt(0)}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-sm">{m.full_name || "Sem nome"}</h3>
-                  <p className="text-xs text-primary">{roleLabels[m.role ?? "membro"]}</p>
-                  {m.location && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                      <MapPin className="h-3 w-3" /> {m.location}
-                    </p>
-                  )}
-                  {m.specialty && (
-                    <div className="flex gap-1.5 mt-2 flex-wrap">
-                      <span className="text-xs bg-secondary px-2 py-0.5 rounded">{m.specialty}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((m, i) => (
+            <ProfileCard
+              key={m.id}
+              name={m.full_name || "Sem nome"}
+              description={[m.specialty, m.location].filter(Boolean).join(" · ") || m.bio || roleLabels[m.role ?? "membro"]}
+              image={m.avatar_url || defaultAvatars[i % defaultAvatars.length]}
+              isVerified={m.role === "admin" || m.role === "mentor"}
+              followers={0}
+              following={0}
+              enableAnimations
+              className="h-80"
+            />
           ))}
         </div>
       )}
