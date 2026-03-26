@@ -105,6 +105,29 @@ export default function Admin() {
     toast.success("Usuário atualizado"); setEditUser(null); fetchUsers();
   };
 
+  const createUser = async () => {
+    if (!newUserForm.email || !newUserForm.password || !newUserForm.full_name) {
+      toast.error("Preencha todos os campos"); return;
+    }
+    setCreatingUser(true);
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("create-user", {
+        body: newUserForm,
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success("Usuário criado com sucesso");
+      setNewUserOpen(false);
+      setNewUserForm({ full_name: "", email: "", password: "", role: "membro" });
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao criar usuário");
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
   // ── Insight handlers ──
   const openEditInsight = (i: InsightRow) => {
     setInsightForm({ title: i.title, content: i.content, tags: i.tags.join(", ") }); setEditInsight(i);
