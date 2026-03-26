@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Search, Pencil, Trash2, Plus, ToggleLeft, ToggleRight } from "lucide-react";
+import { Shield, Search, Pencil, Trash2, Plus, ToggleLeft, ToggleRight, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,9 @@ export default function Admin() {
   const [searchUsers, setSearchUsers] = useState("");
   const [editUser, setEditUser] = useState<UserRow | null>(null);
   const [userForm, setUserForm] = useState({ full_name: "", headline: "", specialty: "", location: "", bio: "" });
+  const [newUserOpen, setNewUserOpen] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({ full_name: "", email: "", password: "", role: "membro" });
+  const [creatingUser, setCreatingUser] = useState(false);
 
   const [insights, setInsights] = useState<InsightRow[]>([]);
   const [loadingInsights, setLoadingInsights] = useState(true);
