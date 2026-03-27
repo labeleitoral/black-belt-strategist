@@ -7,6 +7,7 @@ import {
   FlaskConical,
   BookOpen,
   Shield,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -31,6 +32,7 @@ const items = [
   { title: "Cases", url: "/cases", icon: Briefcase },
   { title: "Rede", url: "/rede", icon: Users },
   { title: "Lab", url: "/lab", icon: FlaskConical },
+  { title: "Vagas", url: "/vagas", icon: BriefcaseBusiness },
   { title: "Biblioteca", url: "/biblioteca", icon: BookOpen },
 ];
 
