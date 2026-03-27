@@ -25,7 +25,7 @@ export default function Dashboard() {
         .limit(10),
       supabase
         .from("posts_lab")
-        .select("id, content, created_at, likes_count, comments_count, author_id")
+        .select("id, content, created_at, likes_count, comments_count, author_id, category, image_url, video_url, link_url")
         .order("created_at", { ascending: false })
         .limit(10),
     ]);
@@ -88,6 +88,10 @@ export default function Dashboard() {
         created_at: p.created_at,
         likes_count: p.likes_count,
         comments_count: p.comments_count,
+        category: (p as any).category || undefined,
+        image_url: (p as any).image_url || undefined,
+        video_url: (p as any).video_url || undefined,
+        link_url: (p as any).link_url || undefined,
         author: getAuthor(p.author_id),
       })),
     ];
@@ -132,7 +136,7 @@ export default function Dashboard() {
             </div>
           ) : (
             feedItems.map((item) => (
-              <FeedPost key={`${item.type}-${item.id}`} item={item} />
+              <FeedPost key={`${item.type}-${item.id}`} item={item} onDeleted={fetchFeed} />
             ))
           )}
         </div>

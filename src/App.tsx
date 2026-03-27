@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import Lab from "./pages/Lab";
 import Library from "./pages/Library";
 import Admin from "./pages/Admin";
+import Jobs from "./pages/Jobs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
@@ -58,6 +59,7 @@ const App = () => (
                       <Route path="/perfil" element={<Profile />} />
                       <Route path="/lab" element={<Lab />} />
                       <Route path="/biblioteca" element={<Library />} />
+                      <Route path="/vagas" element={<Jobs />} />
                       <Route path="/admin" element={<Admin />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
