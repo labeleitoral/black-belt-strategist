@@ -224,27 +224,48 @@ export type Database = {
       posts_lab: {
         Row: {
           author_id: string
+          category: string
           comments_count: number
           content: string
           created_at: string
           id: string
+          image_url: string | null
           likes_count: number
+          link_description: string | null
+          link_image: string | null
+          link_title: string | null
+          link_url: string | null
+          video_url: string | null
         }
         Insert: {
           author_id: string
+          category?: string
           comments_count?: number
           content: string
           created_at?: string
           id?: string
+          image_url?: string | null
           likes_count?: number
+          link_description?: string | null
+          link_image?: string | null
+          link_title?: string | null
+          link_url?: string | null
+          video_url?: string | null
         }
         Update: {
           author_id?: string
+          category?: string
           comments_count?: number
           content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           likes_count?: number
+          link_description?: string | null
+          link_image?: string | null
+          link_title?: string | null
+          link_url?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
